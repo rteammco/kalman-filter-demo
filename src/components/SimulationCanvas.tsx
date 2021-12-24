@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
-const CANVAS_HEIGHT = 400;
-const CANVAS_WIDTH = 650;
-
 const CANVAS_BACKGROUND_COLOR = 'black';
 
-export default function SimulationCanvas() {
+interface Props {
+  canvasHeight: number;
+  canvasWidth: number;
+}
+
+export default function SimulationCanvas(props: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [canvasContext, setCanvasContext] = useState<CanvasRenderingContext2D | null>(null);
 
@@ -32,7 +34,9 @@ export default function SimulationCanvas() {
 
   return (
     <div>
-      <canvas height={CANVAS_HEIGHT} ref={canvasRef} width={CANVAS_WIDTH} />
+      <canvas height={props.canvasHeight} ref={canvasRef} width={props.canvasWidth}>
+        Oops! Your browser doesn't support the canvas element.
+      </canvas>
     </div>
   );
 }
