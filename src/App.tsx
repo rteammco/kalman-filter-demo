@@ -10,8 +10,8 @@ import {
 } from './simulation/Simulation';
 import { useState } from 'react';
 
-const CANVAS_HEIGHT = 600;
-const CANVAS_WIDTH = 900;
+const CANVAS_HEIGHT = 480;
+const CANVAS_WIDTH = 720;
 
 function App() {
   const [simulationState, setSimulationState] = useState<SimulationState>(initialSimulationState);
