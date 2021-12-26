@@ -37,13 +37,16 @@ function MatrixInputCell({
       alignItems="center"
       border={`1px solid ${MATRIX_CELL_BORDER_COLOR}`}
       display="flex"
+      height={48}
       justifyContent="center"
-      padding={1}
+      width={48}
     >
       <input
         style={{
           border: 'none',
           height: '30px',
+          margin: 0,
+          padding: 0,
           textAlign: 'center',
           width: '30px',
         }}
@@ -107,15 +110,13 @@ export default function MatrixInputGrid(props: Props) {
     setMatrixValues(newMatrixValues);
   }
 
-  const matrixWidth = 52 * 4; // 52px per cell
   return (
-    <Box alignItems="center" display="flex" flexDirection="column" paddingX={2} width={matrixWidth}>
+    <Box alignItems="center" display="flex" flexDirection="column" paddingX={2}>
       <Box
         border={`2px solid ${MATRIX_CELL_BORDER_COLOR}`}
         display="flex"
         flexDirection="column"
         marginBottom={1}
-        width={matrixWidth}
       >
         <MatrixInputRow
           rowValues={matrixValues[0]}
