@@ -96,9 +96,6 @@ export function updateSimulationStateMatrix(
   const simulationStateMatrices = { ...matrices };
   simulationStateMatrices[matrixKey] = newMatrixValues;
   return simulationStateMatrices;
-  // return updateSimulationStateControls(simulationState, {
-  //   matrices: simulationStateMatrices,
-  // });
 }
 
 export { initialSimulationState };

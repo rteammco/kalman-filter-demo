@@ -104,8 +104,6 @@ export default function MatrixInputGrid(props: Props) {
     props.onMatrixValuesChanged(newMatrixValues);
   }
 
-  console.log({ matrixName: props.matrixName, matrixValues });
-
   return (
     <Box alignItems="center" display="flex" flexDirection="column" paddingX={2}>
       <Box

@@ -15,7 +15,6 @@ interface Props {
 }
 
 export default function SimulationCanvas(props: Props) {
-  // Refs used for animation loop:
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const { simulationState } = props;
