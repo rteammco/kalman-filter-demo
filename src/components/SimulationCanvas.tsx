@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Point, SimulationState } from '../simulation/Simulation';
 
-const CANVAS_BACKGROUND_COLOR = 'black';
-const ANIMATION_FRAMERATE_FPS = 30;
+const CANVAS_CONFIG = {
+  backgroundColor: 'black',
+  cursorColor: 'red',
+  cursorRadius: 5,
+} as const;
 
 interface Props {
   canvasHeight: number;
@@ -20,24 +23,23 @@ export default function SimulationCanvas(props: Props) {
   simulationStateRef.current = simulationState;
 
   useEffect(() => {
-    animateFrame();
-  }, []);
+    requestAnimationFrame(animateFrame);
+  }, [props.simulationState]);
 
   function clearBackground(context: CanvasRenderingContext2D): void {
     const { width, height } = context.canvas;
     context.clearRect(0, 0, width, height);
     context.beginPath();
     context.rect(0, 0, width, height);
-    context.fillStyle = CANVAS_BACKGROUND_COLOR;
+    context.fillStyle = CANVAS_CONFIG.backgroundColor;
     context.fill();
   }
 
   function drawCursorPosition(context: CanvasRenderingContext2D): void {
-    // TODO: fix animation issues
     const position = simulationStateRef.current.realCursorPosition;
     context.beginPath();
-    context.arc(position.x, position.y, 10, 0, 2 * Math.PI);
-    context.fillStyle = 'red';
+    context.arc(position.x, position.y, CANVAS_CONFIG.cursorRadius, 0, 2 * Math.PI);
+    context.fillStyle = CANVAS_CONFIG.cursorColor;
     context.fill();
   }
 
@@ -47,10 +49,13 @@ export default function SimulationCanvas(props: Props) {
       clearBackground(context);
       drawCursorPosition(context);
     }
-    setTimeout(animateFrame, 1000 / ANIMATION_FRAMERATE_FPS);
   }
 
   function handleMouseMoved(event: React.MouseEvent<Element, MouseEvent>): void {
+    if (!simulationState.controls.isSimulationRunning) {
+      return;
+    }
+    event.preventDefault();
     const canvas = canvasRef.current;
     if (canvas == null) {
       return;

@@ -1,16 +1,24 @@
 import './App.css';
 import SimulationCanvas from './components/SimulationCanvas';
 import SimulationControls from './components/SimulationControls';
-import { Point, SimulationState } from './simulation/Simulation';
+import {
+  initialSimulationState,
+  Point,
+  SimulationState,
+  SimulationStateControls,
+  updateSimulationStateControls,
+} from './simulation/Simulation';
 import { useState } from 'react';
 
 const CANVAS_HEIGHT = 600;
 const CANVAS_WIDTH = 900;
 
 function App() {
-  const [simulationState, setSimulationState] = useState<SimulationState>({
-    realCursorPosition: { x: 0, y: 0 },
-  });
+  const [simulationState, setSimulationState] = useState<SimulationState>(initialSimulationState);
+
+  function onSimulationControlsChanged(updatedControls: Partial<SimulationStateControls>): void {
+    setSimulationState(updateSimulationStateControls(simulationState, updatedControls));
+  }
 
   function onCursorPositionChanged(position: Point): void {
     setSimulationState({ ...simulationState, realCursorPosition: position });
@@ -24,7 +32,11 @@ function App() {
         simulationState={simulationState}
         onCursorPositionChanged={onCursorPositionChanged}
       />
-      <SimulationControls panelWidth={CANVAS_WIDTH} />
+      <SimulationControls
+        panelWidth={CANVAS_WIDTH}
+        simulationState={simulationState}
+        onSimulationControlsChanged={onSimulationControlsChanged}
+      />
     </div>
   );
 }

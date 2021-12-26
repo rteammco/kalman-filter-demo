@@ -1,29 +1,61 @@
 import { Button, Checkbox, FormControlLabel, Slider, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
+import { SimulationState, SimulationStateControls } from '../simulation/Simulation';
 import MatrixInputGrid from './MatrixInputGrid';
 
 type SimulationStatus = 'NOT_STARTED' | 'RUNNING' | 'PAUSED';
 
 interface Props {
   panelWidth: number;
+  simulationState: SimulationState;
+  onSimulationControlsChanged: (updatedControls: Partial<SimulationStateControls>) => void;
 }
 
 export default function SimulationControls(props: Props) {
-  const [simulationStatus, setSimulationStatus] = useState<SimulationStatus>('NOT_STARTED');
+  const [simulationStatusText, setSimulationStatusText] = useState<SimulationStatus>('NOT_STARTED');
+
+  const { onSimulationControlsChanged } = props;
+  const simulationStateControls = props.simulationState.controls;
 
   function toggleSimulation(): void {
-    if (simulationStatus === 'RUNNING') {
-      setSimulationStatus('PAUSED');
+    if (simulationStatusText === 'RUNNING') {
+      setSimulationStatusText('PAUSED');
+      onSimulationControlsChanged({ isSimulationRunning: false });
     } else {
-      setSimulationStatus('RUNNING');
+      setSimulationStatusText('RUNNING');
+      onSimulationControlsChanged({ isSimulationRunning: true });
     }
   }
 
+  function toggleShowPrediction(): void {
+    onSimulationControlsChanged({ showPrediction: !simulationStateControls.showPrediction });
+  }
+
+  function onNoisePercentageChanged(_event: Event, newValue: number | number[]): void {
+    let newValueAsNumber: number;
+    if (typeof newValue === 'number') {
+      newValueAsNumber = newValue;
+    } else {
+      newValueAsNumber = newValue[0];
+    }
+    onSimulationControlsChanged({ noisePercentage: newValueAsNumber });
+  }
+
+  function onPredictionSecondsChanged(_event: Event, newValue: number | number[]): void {
+    let newValueAsNumber: number;
+    if (typeof newValue === 'number') {
+      newValueAsNumber = newValue;
+    } else {
+      newValueAsNumber = newValue[0];
+    }
+    onSimulationControlsChanged({ predictionSeconds: newValueAsNumber });
+  }
+
   let toggleSimulationButtonText: string;
-  if (simulationStatus === 'NOT_STARTED') {
+  if (simulationStatusText === 'NOT_STARTED') {
     toggleSimulationButtonText = 'Start Simulation';
-  } else if (simulationStatus === 'RUNNING') {
+  } else if (simulationStatusText === 'RUNNING') {
     toggleSimulationButtonText = 'Pause';
   } else {
     toggleSimulationButtonText = 'Resume';
@@ -52,14 +84,24 @@ export default function SimulationControls(props: Props) {
             <Button color="warning" variant="outlined">
               Reset Values
             </Button>
-            <FormControlLabel control={<Checkbox />} label="Show Prediction" />
+            <FormControlLabel
+              control={<Checkbox checked={simulationStateControls.showPrediction} />}
+              label="Show Prediction"
+              onChange={toggleShowPrediction}
+            />
           </Box>
           <Box paddingTop={5} paddingX={5}>
             <Stack direction="row" alignItems="center">
               <Typography align="right" minWidth={100} paddingRight={3} width="15%">
                 Noise:
               </Typography>
-              <Slider valueLabelDisplay="auto" />
+              <Slider
+                max={100}
+                min={0}
+                value={simulationStateControls.noisePercentage}
+                valueLabelDisplay="auto"
+                onChange={onNoisePercentageChanged}
+              />
             </Stack>
           </Box>
           <Box paddingTop={4} paddingX={5}>
@@ -67,7 +109,13 @@ export default function SimulationControls(props: Props) {
               <Typography align="right" minWidth={100} paddingRight={3} width="15%">
                 Prediction:
               </Typography>
-              <Slider max={10} min={0} valueLabelDisplay="auto" />
+              <Slider
+                max={10}
+                min={0}
+                value={simulationStateControls.predictionSeconds}
+                valueLabelDisplay="auto"
+                onChange={onPredictionSecondsChanged}
+              />
             </Stack>
           </Box>
         </Box>
