@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Point, SimulationState } from '../simulation/Simulation';
+import { Point, SimulationState } from '../simulation/SimulationData';
 
 const CANVAS_CONFIG = {
   backgroundColor: 'black',

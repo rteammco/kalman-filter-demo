@@ -7,7 +7,7 @@ import {
   SimulationState,
   SimulationStateControls,
   updateSimulationStateControls,
-} from './simulation/Simulation';
+} from './simulation/SimulationData';
 import { useState } from 'react';
 
 const CANVAS_HEIGHT = 480;

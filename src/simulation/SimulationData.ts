@@ -1,0 +1,104 @@
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export type SimulationMatrixRow = [number, number, number, number];
+export type SimulationMatrix = [
+  SimulationMatrixRow,
+  SimulationMatrixRow,
+  SimulationMatrixRow,
+  SimulationMatrixRow
+];
+
+export type SimulationMatrixKey = 'A' | 'B' | 'H' | 'Q' | 'R';
+interface SimulationStateMatrices {
+  A: SimulationMatrix;
+  B: SimulationMatrix;
+  H: SimulationMatrix;
+  Q: SimulationMatrix;
+  R: SimulationMatrix;
+}
+
+export interface SimulationStateControls {
+  isSimulationRunning: boolean;
+  noisePercentage: number;
+  predictionSeconds: number;
+  showPrediction: boolean;
+  matrices: SimulationStateMatrices;
+}
+
+export interface SimulationState {
+  controls: SimulationStateControls;
+  realCursorPosition: Point;
+}
+
+const initialSimulationState: SimulationState = {
+  controls: {
+    isSimulationRunning: false,
+    noisePercentage: 5,
+    predictionSeconds: 2,
+    showPrediction: true,
+    matrices: {
+      A: [
+        [1, 0, 0.2, 0],
+        [0, 1, 0, 0.2],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+      ],
+      B: [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+      ],
+      H: [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+      ],
+      Q: [
+        [0.001, 0, 0, 0],
+        [0, 0.001, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ],
+      R: [
+        [0.1, 0, 0, 0],
+        [0, 0.1, 0, 0],
+        [0, 0, 0.1, 0],
+        [0, 0, 0, 0.1],
+      ],
+    },
+  },
+  realCursorPosition: { x: 0, y: 0 },
+};
+
+export function updateSimulationStateControls(
+  simulationState: SimulationState,
+  updates: Partial<SimulationStateControls>
+): SimulationState {
+  return {
+    ...simulationState,
+    controls: {
+      ...simulationState.controls,
+      ...updates,
+    },
+  };
+}
+
+export function updateSimulationStateMatrix(
+  matrices: SimulationStateMatrices,
+  matrixKey: SimulationMatrixKey,
+  newMatrixValues: SimulationMatrix
+): SimulationStateMatrices {
+  const simulationStateMatrices = { ...matrices };
+  simulationStateMatrices[matrixKey] = newMatrixValues;
+  return simulationStateMatrices;
+  // return updateSimulationStateControls(simulationState, {
+  //   matrices: simulationStateMatrices,
+  // });
+}
+
+export { initialSimulationState };

@@ -1,23 +1,7 @@
 import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
-
-type MatrixRowValues = [string, string, string, string];
-type MatrixValues = [MatrixRowValues, MatrixRowValues, MatrixRowValues, MatrixRowValues];
-
-const DEFAULT_CELL_VALUE = '0';
-const DEFAULT_ROW_VALUE: MatrixRowValues = [
-  DEFAULT_CELL_VALUE,
-  DEFAULT_CELL_VALUE,
-  DEFAULT_CELL_VALUE,
-  DEFAULT_CELL_VALUE,
-];
-const DEFAULT_MATRIX_VALUE: MatrixValues = [
-  DEFAULT_ROW_VALUE,
-  DEFAULT_ROW_VALUE,
-  DEFAULT_ROW_VALUE,
-  DEFAULT_ROW_VALUE,
-];
+import { SimulationMatrix, SimulationMatrixRow } from '../simulation/SimulationData';
 
 const MATRIX_CELL_BORDER_COLOR = 'black';
 
@@ -25,11 +9,22 @@ function MatrixInputCell({
   value,
   onValueChanged,
 }: {
-  value: string;
-  onValueChanged: (newValue: string) => void;
+  value: number;
+  onValueChanged: (newValue: number) => void;
 }) {
+  const [rawCellValue, setRawCellValue] = useState<string>(value.toString());
+
   function handleInput(event: React.ChangeEvent<HTMLInputElement>): void {
-    onValueChanged(event.target.value);
+    const newCellValue = event.target.value;
+    const newValueAsFloat = parseFloat(newCellValue);
+    if (!isNaN(newValueAsFloat)) {
+      onValueChanged(newValueAsFloat);
+    }
+    setRawCellValue(newCellValue);
+  }
+
+  function handleBlur(): void {
+    setRawCellValue(value.toString());
   }
 
   return (
@@ -50,7 +45,8 @@ function MatrixInputCell({
           textAlign: 'center',
           width: '30px',
         }}
-        value={value}
+        value={rawCellValue}
+        onBlur={handleBlur}
         onChange={handleInput}
       />
     </Box>
@@ -61,11 +57,11 @@ function MatrixInputRow({
   rowValues,
   onRowValuesChanged,
 }: {
-  rowValues: MatrixRowValues;
-  onRowValuesChanged: (newRowValues: MatrixRowValues) => void;
+  rowValues: SimulationMatrixRow;
+  onRowValuesChanged: (newRowValues: SimulationMatrixRow) => void;
 }) {
-  function onCellValueChanged(colIndex: number, newValue: string): void {
-    const newRowValues = [...rowValues] as MatrixRowValues;
+  function onCellValueChanged(colIndex: number, newValue: number): void {
+    const newRowValues = [...rowValues] as SimulationMatrixRow;
     newRowValues[colIndex] = newValue;
     onRowValuesChanged(newRowValues);
   }
@@ -74,19 +70,19 @@ function MatrixInputRow({
     <Box display="flex" flexDirection="row">
       <MatrixInputCell
         value={rowValues[0]}
-        onValueChanged={(newValue: string) => onCellValueChanged(0, newValue)}
+        onValueChanged={(newValue: number) => onCellValueChanged(0, newValue)}
       />
       <MatrixInputCell
         value={rowValues[1]}
-        onValueChanged={(newValue: string) => onCellValueChanged(1, newValue)}
+        onValueChanged={(newValue: number) => onCellValueChanged(1, newValue)}
       />
       <MatrixInputCell
         value={rowValues[2]}
-        onValueChanged={(newValue: string) => onCellValueChanged(2, newValue)}
+        onValueChanged={(newValue: number) => onCellValueChanged(2, newValue)}
       />
       <MatrixInputCell
         value={rowValues[3]}
-        onValueChanged={(newValue: string) => onCellValueChanged(3, newValue)}
+        onValueChanged={(newValue: number) => onCellValueChanged(3, newValue)}
       />
     </Box>
   );
@@ -95,20 +91,20 @@ function MatrixInputRow({
 interface Props {
   matrixDescription: string;
   matrixName: string;
+  matrixValues: SimulationMatrix;
+  onMatrixValuesChanged: (newMatrixValues: SimulationMatrix) => void;
 }
 
 export default function MatrixInputGrid(props: Props) {
-  const [matrixValues, setMatrixValues] = useState<MatrixValues>(DEFAULT_MATRIX_VALUE);
+  const { matrixValues } = props;
 
-  // TODO: validate values before sending to callback
-  // const newValueAsFloat = parseFloat(newValue);
-  // if (!isNaN(newValueAsFloat) && newValueAsFloat.toString() === newValue.replace(/^0+/, '')) ...
-
-  function onRowValuesChanged(rowIndex: number, newRowValues: MatrixRowValues): void {
-    const newMatrixValues = [...matrixValues] as MatrixValues;
+  function onRowValuesChanged(rowIndex: number, newRowValues: SimulationMatrixRow): void {
+    const newMatrixValues: SimulationMatrix = [...matrixValues];
     newMatrixValues[rowIndex] = newRowValues;
-    setMatrixValues(newMatrixValues);
+    props.onMatrixValuesChanged(newMatrixValues);
   }
+
+  console.log({ matrixName: props.matrixName, matrixValues });
 
   return (
     <Box alignItems="center" display="flex" flexDirection="column" paddingX={2}>
@@ -120,25 +116,25 @@ export default function MatrixInputGrid(props: Props) {
       >
         <MatrixInputRow
           rowValues={matrixValues[0]}
-          onRowValuesChanged={(newRowValues: MatrixRowValues) =>
+          onRowValuesChanged={(newRowValues: SimulationMatrixRow) =>
             onRowValuesChanged(0, newRowValues)
           }
         />
         <MatrixInputRow
           rowValues={matrixValues[1]}
-          onRowValuesChanged={(newRowValues: MatrixRowValues) =>
+          onRowValuesChanged={(newRowValues: SimulationMatrixRow) =>
             onRowValuesChanged(1, newRowValues)
           }
         />
         <MatrixInputRow
           rowValues={matrixValues[2]}
-          onRowValuesChanged={(newRowValues: MatrixRowValues) =>
+          onRowValuesChanged={(newRowValues: SimulationMatrixRow) =>
             onRowValuesChanged(2, newRowValues)
           }
         />
         <MatrixInputRow
           rowValues={matrixValues[3]}
-          onRowValuesChanged={(newRowValues: MatrixRowValues) =>
+          onRowValuesChanged={(newRowValues: SimulationMatrixRow) =>
             onRowValuesChanged(3, newRowValues)
           }
         />

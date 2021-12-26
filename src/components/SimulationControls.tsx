@@ -1,7 +1,13 @@
 import { Button, Checkbox, FormControlLabel, Slider, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
-import { SimulationState, SimulationStateControls } from '../simulation/Simulation';
+import {
+  SimulationMatrix,
+  SimulationMatrixKey,
+  SimulationState,
+  SimulationStateControls,
+  updateSimulationStateMatrix,
+} from '../simulation/SimulationData';
 import MatrixInputGrid from './MatrixInputGrid';
 
 type SimulationStatus = 'NOT_STARTED' | 'RUNNING' | 'PAUSED';
@@ -17,6 +23,7 @@ export default function SimulationControls(props: Props) {
 
   const { onSimulationControlsChanged } = props;
   const simulationStateControls = props.simulationState.controls;
+  const { matrices } = simulationStateControls;
 
   function toggleSimulation(): void {
     if (simulationStatusText === 'RUNNING') {
@@ -50,6 +57,15 @@ export default function SimulationControls(props: Props) {
       newValueAsNumber = newValue[0];
     }
     onSimulationControlsChanged({ predictionSeconds: newValueAsNumber });
+  }
+
+  function onMatrixValuesChanged(
+    matrixKey: SimulationMatrixKey,
+    newMatrixValues: SimulationMatrix
+  ): void {
+    onSimulationControlsChanged({
+      matrices: updateSimulationStateMatrix(matrices, matrixKey, newMatrixValues),
+    });
   }
 
   let toggleSimulationButtonText: string;
@@ -127,9 +143,24 @@ export default function SimulationControls(props: Props) {
         paddingTop={4}
         width={panelWidth}
       >
-        <MatrixInputGrid matrixDescription="State Transition" matrixName="A Matrix" />
-        <MatrixInputGrid matrixDescription="Input Control" matrixName="B Matrix" />
-        <MatrixInputGrid matrixDescription="Measurement" matrixName="H Matrix" />
+        <MatrixInputGrid
+          matrixDescription="State Transition"
+          matrixName="A Matrix"
+          matrixValues={matrices.A}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('A', newMatrixValues)}
+        />
+        <MatrixInputGrid
+          matrixDescription="Input Control"
+          matrixName="B Matrix"
+          matrixValues={matrices.B}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('B', newMatrixValues)}
+        />
+        <MatrixInputGrid
+          matrixDescription="Measurement"
+          matrixName="H Matrix"
+          matrixValues={matrices.H}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('H', newMatrixValues)}
+        />
       </Box>
       <Box
         display="flex"
@@ -138,8 +169,18 @@ export default function SimulationControls(props: Props) {
         paddingTop={3}
         width={panelWidth}
       >
-        <MatrixInputGrid matrixDescription="Action Uncertainty" matrixName="Q Matrix" />
-        <MatrixInputGrid matrixDescription="Sensor Noise" matrixName="R Matrix" />
+        <MatrixInputGrid
+          matrixDescription="Action Uncertainty"
+          matrixName="Q Matrix"
+          matrixValues={matrices.Q}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('Q', newMatrixValues)}
+        />
+        <MatrixInputGrid
+          matrixDescription="Sensor Noise"
+          matrixName="R Matrix"
+          matrixValues={matrices.R}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('R', newMatrixValues)}
+        />
       </Box>
     </Box>
   );
