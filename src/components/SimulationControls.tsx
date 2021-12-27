@@ -159,6 +159,7 @@ export default function SimulationControls(props: Props) {
             onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('A', newMatrixValues)}
           />
           <MatrixInputGrid
+            isDisabled
             matrixDescription="Input Control"
             matrixName="B Matrix"
             matrixValues={matrices.B}
