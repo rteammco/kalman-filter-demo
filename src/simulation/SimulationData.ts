@@ -22,10 +22,11 @@ interface SimulationStateMatrices {
 
 export interface SimulationStateControls {
   isSimulationRunning: boolean;
+  matrices: SimulationStateMatrices;
+  matrixInputsRefCounter: number; // increases to force re-rendering
   noisePercentage: number;
   predictionSeconds: number;
   showPrediction: boolean;
-  matrices: SimulationStateMatrices;
 }
 
 export interface SimulationState {
@@ -36,9 +37,6 @@ export interface SimulationState {
 const initialSimulationState: SimulationState = {
   controls: {
     isSimulationRunning: false,
-    noisePercentage: 5,
-    predictionSeconds: 2,
-    showPrediction: true,
     matrices: {
       A: [
         [1, 0, 0.2, 0],
@@ -71,6 +69,10 @@ const initialSimulationState: SimulationState = {
         [0, 0, 0, 0.1],
       ],
     },
+    matrixInputsRefCounter: 0,
+    noisePercentage: 5,
+    predictionSeconds: 2,
+    showPrediction: true,
   },
   realCursorPosition: { x: 0, y: 0 },
 };
