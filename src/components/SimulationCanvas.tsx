@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Point, SimulationState } from '../simulation/SimulationData';
+import { arePointsEqual } from '../utils/Utils';
 
 const CANVAS_CONFIG = {
   backgroundColor: 'black',
@@ -14,19 +15,53 @@ interface Props {
   canvasHeight: number;
   canvasWidth: number;
   simulationState: SimulationState;
+  userInputSamplingRateFPS: number;
   onCursorPositionChanged: (position: Point) => void;
 }
 
 export default function SimulationCanvas(props: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasCursorPositionRef = useRef<Point | null>(null);
 
   const { simulationState } = props;
   const simulationStateRef = useRef<SimulationState>(simulationState);
   simulationStateRef.current = simulationState;
 
+  // Start the animation loop:
+  const animationFrameRequestRef = useRef<number | null>(null);
   useEffect(() => {
-    requestAnimationFrame(animateFrame);
-  }, [props.simulationState]);
+    animationFrameRequestRef.current = requestAnimationFrame(animateFrame);
+    return () => {
+      if (animationFrameRequestRef.current != null) {
+        cancelAnimationFrame(animationFrameRequestRef.current);
+      }
+    };
+  }, []);
+
+  // Start a mouse position sampling loop at the desired framerate, since using the canvas
+  // onMouseMove event floods the callback event queue and creates a lot of lag:
+  useEffect(() => {
+    const userInputSamplingInterval = setInterval(
+      sampleCursorPosition,
+      Math.round(1000 / props.userInputSamplingRateFPS)
+    );
+    return () => {
+      clearInterval(userInputSamplingInterval);
+    };
+  }, []);
+
+  function sampleCursorPosition(): void {
+    if (
+      simulationStateRef.current.controls.isSimulationRunning &&
+      canvasCursorPositionRef.current != null &&
+      !arePointsEqual(
+        simulationStateRef.current.realCursorPosition,
+        canvasCursorPositionRef.current
+      )
+    ) {
+      props.onCursorPositionChanged(canvasCursorPositionRef.current);
+    }
+  }
 
   function clearBackground(context: CanvasRenderingContext2D): void {
     const { width, height } = context.canvas;
@@ -67,12 +102,10 @@ export default function SimulationCanvas(props: Props) {
       drawCursorPosition(context);
       drawPredictedPosition(context);
     }
+    animationFrameRequestRef.current = requestAnimationFrame(animateFrame);
   }
 
   function handleMouseMoved(event: React.MouseEvent<Element, MouseEvent>): void {
-    if (!simulationState.controls.isSimulationRunning) {
-      return;
-    }
     event.preventDefault();
     const canvas = canvasRef.current;
     if (canvas == null) {
@@ -81,7 +114,7 @@ export default function SimulationCanvas(props: Props) {
     const canvasBoundingRect = canvas.getBoundingClientRect();
     const x = event.clientX - canvasBoundingRect.left;
     const y = event.clientY - canvasBoundingRect.top;
-    props.onCursorPositionChanged({ x, y });
+    canvasCursorPositionRef.current = { x, y };
   }
 
   return (
