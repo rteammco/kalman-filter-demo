@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Point, SimulationState } from '../simulation/SimulationData';
 
 const CANVAS_CONFIG = {
@@ -23,6 +23,7 @@ interface Props {
 export default function SimulationCanvas(props: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasCursorPositionRef = useRef<Point | null>(null);
+  const canvasCursorLockedRef = useRef<boolean>(false);
 
   const { simulationState } = props;
   const simulationStateRef = useRef<SimulationState>(simulationState);
@@ -119,10 +120,16 @@ export default function SimulationCanvas(props: Props) {
     animationFrameRequestRef.current = requestAnimationFrame(animateFrame);
   }
 
+  function handleMouseClicked(event: React.MouseEvent<Element, MouseEvent>): void {
+    canvasCursorLockedRef.current = !canvasCursorLockedRef.current;
+    handleMouseMoved(event);
+  }
+
   function handleMouseMoved(event: React.MouseEvent<Element, MouseEvent>): void {
     event.preventDefault();
     const canvas = canvasRef.current;
-    if (canvas == null) {
+    const isCursorLocked = canvasCursorLockedRef.current;
+    if (canvas == null || isCursorLocked) {
       return;
     }
     const canvasBoundingRect = canvas.getBoundingClientRect();
@@ -137,6 +144,7 @@ export default function SimulationCanvas(props: Props) {
         height={props.canvasHeight}
         ref={canvasRef}
         width={props.canvasWidth}
+        onClick={handleMouseClicked}
         onMouseMove={handleMouseMoved}
       >
         Oops! Your browser doesn't support the canvas element.
