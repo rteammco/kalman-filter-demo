@@ -1,4 +1,5 @@
 import { inverse, Matrix } from 'ml-matrix';
+import { applyRandomNoise } from '../utils/Utils';
 import {
   SimulationMatrix,
   SimulationVector,
@@ -91,14 +92,26 @@ export function runKalmanFilter(simulationState: SimulationState): {
 
 // Applies simulated noise and returns the measurement vector
 export function getSimulatedMeasurementVector(
+  simulationState: SimulationState,
+  canvasWidth: number,
+  canvasHeight: number,
   realCursorPosition: Point,
   previousMeasurementVector: SimulationVector
 ): SimulationVector {
-  // TODO: apply noise
-  return [
+  const measuredX = applyRandomNoise(
     realCursorPosition.x,
+    simulationState.controls.noisePercentage,
+    canvasWidth
+  );
+  const measuredY = applyRandomNoise(
     realCursorPosition.y,
-    realCursorPosition.x - previousMeasurementVector[0],
-    realCursorPosition.y - previousMeasurementVector[1],
+    simulationState.controls.noisePercentage,
+    canvasHeight
+  );
+  return [
+    measuredX,
+    measuredY,
+    measuredX - previousMeasurementVector[0],
+    measuredY - previousMeasurementVector[1],
   ];
 }

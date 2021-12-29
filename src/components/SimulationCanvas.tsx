@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { Point, SimulationState } from '../simulation/SimulationData';
-import { arePointsEqual } from '../utils/Utils';
 
 const CANVAS_CONFIG = {
   backgroundColor: 'black',
@@ -53,11 +52,7 @@ export default function SimulationCanvas(props: Props) {
   function sampleCursorPosition(): void {
     if (
       simulationStateRef.current.controls.isSimulationRunning &&
-      canvasCursorPositionRef.current != null &&
-      !arePointsEqual(
-        simulationStateRef.current.realCursorPosition,
-        canvasCursorPositionRef.current
-      )
+      canvasCursorPositionRef.current != null
     ) {
       props.onCursorPositionChanged(canvasCursorPositionRef.current);
     }

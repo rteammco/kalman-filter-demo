@@ -53,6 +53,9 @@ function App() {
     const currentSimulationState = simulationStateRef.current;
     const { sensorReadings } = currentSimulationState;
     const newMeasurementVector = getSimulatedMeasurementVector(
+      currentSimulationState,
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
       newPosition,
       sensorReadings.previousMeasurementVector
     );

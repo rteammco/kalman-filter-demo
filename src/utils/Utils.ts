@@ -1,5 +1,5 @@
-import { Point } from '../simulation/SimulationData';
-
-export function arePointsEqual(point1: Point, point2: Point): boolean {
-  return point1.x === point2.x && point1.y === point2.y;
+// TODO: apply different types of noise, e.g. Gaussian
+export function applyRandomNoise(value: number, noisePercent: number, maxRange: number): number {
+  const maxDeviationAmount = maxRange * (noisePercent / 100);
+  return value + Math.round(maxDeviationAmount * Math.random() - maxDeviationAmount / 2);
 }
