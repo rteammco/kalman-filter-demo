@@ -1,4 +1,4 @@
-import { runSimulationStep } from './Simulation';
+import { runKalmanFilter } from './Simulation';
 import { initialSimulationState, SimulationMatrix } from './SimulationData';
 
 // Matrix approximate value comparator since the calcluations aren't exact:
@@ -33,9 +33,9 @@ expect.extend({
   },
 });
 
-test('runSimulationStep predicts no changes without movement or noise', () => {
+test('runKalmanFilter predicts no changes without movement or noise', () => {
   const simulationState = initialSimulationState;
-  const { predictedState, predictedCovariance } = runSimulationStep(simulationState);
+  const { predictedState, predictedCovariance } = runKalmanFilter(simulationState);
   expect(predictedState).toEqual([0, 0, 0, 0]);
   expect(predictedCovariance).matrixToBeCloseTo([
     [0, 0, 0, 0],

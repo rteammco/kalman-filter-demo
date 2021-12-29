@@ -5,6 +5,9 @@ const CANVAS_CONFIG = {
   backgroundColor: 'black',
   cursorColor: 'red',
   cursorRadius: 5,
+  predictionColor: 'green',
+  predictionRadius: 10,
+  predictionStrokeSize: 4,
 } as const;
 
 interface Props {
@@ -42,11 +45,27 @@ export default function SimulationCanvas(props: Props) {
     context.fill();
   }
 
+  function drawPredictedPosition(context: CanvasRenderingContext2D): void {
+    const predictedPosition = simulationStateRef.current.predictedState;
+    context.beginPath();
+    context.arc(
+      predictedPosition[0],
+      predictedPosition[1],
+      CANVAS_CONFIG.predictionRadius,
+      0,
+      2 * Math.PI
+    );
+    context.strokeStyle = CANVAS_CONFIG.predictionColor;
+    context.lineWidth = CANVAS_CONFIG.predictionStrokeSize;
+    context.stroke();
+  }
+
   function animateFrame(): void {
     const context = canvasRef.current?.getContext('2d');
     if (context != null) {
       clearBackground(context);
       drawCursorPosition(context);
+      drawPredictedPosition(context);
     }
   }
 

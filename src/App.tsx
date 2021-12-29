@@ -9,7 +9,7 @@ import {
   updateSimulationStateControls,
 } from './simulation/SimulationData';
 import { useState } from 'react';
-import { getSimulatedMeasurementVector } from './simulation/Simulation';
+import { getNextSimulationState } from './simulation/Simulation';
 
 const CANVAS_HEIGHT = 480;
 const CANVAS_WIDTH = 720;
@@ -22,19 +22,7 @@ function App() {
   }
 
   function onCursorPositionChanged(newPosition: Point): void {
-    const { sensorReadings } = simulationState;
-    const newMeasurementVector = getSimulatedMeasurementVector(
-      newPosition,
-      sensorReadings.previousMeasurementVector
-    );
-    setSimulationState({
-      ...simulationState,
-      realCursorPosition: newPosition,
-      sensorReadings: {
-        measurementVector: newMeasurementVector,
-        previousMeasurementVector: sensorReadings.measurementVector,
-      },
-    });
+    setSimulationState(getNextSimulationState(simulationState, newPosition));
   }
 
   return (
