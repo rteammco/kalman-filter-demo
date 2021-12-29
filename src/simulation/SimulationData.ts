@@ -3,6 +3,7 @@ export interface Point {
   y: number;
 }
 
+export type SimulationVector = [number, number, number, number];
 export type SimulationMatrixRow = [number, number, number, number];
 export type SimulationMatrix = [
   SimulationMatrixRow,
@@ -11,18 +12,25 @@ export type SimulationMatrix = [
   SimulationMatrixRow
 ];
 
-export type SimulationMatrixKey = 'A' | 'B' | 'H' | 'Q' | 'R';
-interface SimulationStateMatrices {
-  A: SimulationMatrix;
-  B: SimulationMatrix;
-  H: SimulationMatrix;
-  Q: SimulationMatrix;
-  R: SimulationMatrix;
+const identityMatrix: SimulationMatrix = [
+  [1, 0, 0, 0],
+  [0, 1, 0, 0],
+  [0, 0, 1, 0],
+  [0, 0, 0, 1],
+];
+
+export type SimulationControlMatrixKey = 'A' | 'B' | 'H' | 'Q' | 'R';
+export interface SimulationStateControlMatrices {
+  A: SimulationMatrix; // state transition matrix
+  B: SimulationMatrix; // input control matrix
+  H: SimulationMatrix; // measurement matrix
+  Q: SimulationMatrix; // action uncertainty matrix
+  R: SimulationMatrix; // sensor noise matrix
 }
 
 export interface SimulationStateControls {
   isSimulationRunning: boolean;
-  matrices: SimulationStateMatrices;
+  matrices: SimulationStateControlMatrices;
   matrixInputsRefCounter: number; // increases to force re-rendering
   noisePercentage: number;
   predictionSeconds: number;
@@ -31,7 +39,13 @@ export interface SimulationStateControls {
 
 export interface SimulationState {
   controls: SimulationStateControls;
-  realCursorPosition: Point;
+  predictedCovariance: SimulationMatrix; // P matrix
+  predictedState: SimulationVector; // x vector
+  realCursorPosition: Point; // used by the visualization
+  sensorReadings: {
+    measurementVector: SimulationVector;
+    previousMeasurementVector: SimulationVector;
+  };
 }
 
 const initialSimulationState: SimulationState = {
@@ -74,7 +88,18 @@ const initialSimulationState: SimulationState = {
     predictionSeconds: 2,
     showPrediction: true,
   },
+  predictedCovariance: [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+  ],
+  predictedState: [0, 0, 0, 0],
   realCursorPosition: { x: 0, y: 0 },
+  sensorReadings: {
+    measurementVector: [0, 0, 0, 0],
+    previousMeasurementVector: [0, 0, 0, 0],
+  },
 };
 
 export function updateSimulationStateControls(
@@ -91,13 +116,13 @@ export function updateSimulationStateControls(
 }
 
 export function updateSimulationStateMatrix(
-  matrices: SimulationStateMatrices,
-  matrixKey: SimulationMatrixKey,
+  matrices: SimulationStateControlMatrices,
+  matrixKey: SimulationControlMatrixKey,
   newMatrixValues: SimulationMatrix
-): SimulationStateMatrices {
+): SimulationStateControlMatrices {
   const simulationStateMatrices = { ...matrices };
   simulationStateMatrices[matrixKey] = newMatrixValues;
   return simulationStateMatrices;
 }
 
-export { initialSimulationState };
+export { identityMatrix, initialSimulationState };

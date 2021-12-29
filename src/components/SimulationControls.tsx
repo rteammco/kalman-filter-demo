@@ -2,11 +2,11 @@ import { Button, Checkbox, FormControlLabel, Slider, Stack, Typography } from '@
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import {
-  initialSimulationState,
+  SimulationControlMatrixKey,
   SimulationMatrix,
-  SimulationMatrixKey,
   SimulationState,
   SimulationStateControls,
+  initialSimulationState,
   updateSimulationStateMatrix,
 } from '../simulation/SimulationData';
 import MatrixInputGrid from './MatrixInputGrid';
@@ -61,7 +61,7 @@ export default function SimulationControls(props: Props) {
   }
 
   function onMatrixValuesChanged(
-    matrixKey: SimulationMatrixKey,
+    matrixKey: SimulationControlMatrixKey,
     newMatrixValues: SimulationMatrix
   ): void {
     onSimulationControlsChanged({
