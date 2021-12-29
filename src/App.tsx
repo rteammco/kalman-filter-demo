@@ -41,8 +41,14 @@ function App() {
 
   function runSimulationStep(): void {
     const currentSimulationState = simulationStateRef.current;
-    const { predictedState, predictedCovariance } = runKalmanFilter(currentSimulationState);
-    setSimulationState({ ...currentSimulationState, predictedState, predictedCovariance });
+    const { predictedState, predictedCovariance, predictedFutureState } =
+      runKalmanFilter(currentSimulationState);
+    setSimulationState({
+      ...currentSimulationState,
+      predictedState,
+      predictedCovariance,
+      predictedFutureState,
+    });
   }
 
   function onSimulationControlsChanged(updatedControls: Partial<SimulationStateControls>): void {

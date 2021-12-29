@@ -5,6 +5,8 @@ const CANVAS_CONFIG = {
   backgroundColor: 'black',
   cursorColor: 'red',
   cursorRadius: 5,
+  predictedPositionColor: 'yellow',
+  predictedPositionRadius: 5,
   predictionColor: 'green',
   predictionRadius: 10,
   predictionStrokeSize: 4,
@@ -90,12 +92,29 @@ export default function SimulationCanvas(props: Props) {
     context.stroke();
   }
 
+  function drawPredictedFuturePosition(context: CanvasRenderingContext2D): void {
+    const predictedFuturePosition = simulationStateRef.current.predictedFutureState;
+    if (predictedFuturePosition != null) {
+      context.beginPath();
+      context.arc(
+        predictedFuturePosition[0],
+        predictedFuturePosition[1],
+        CANVAS_CONFIG.predictedPositionRadius,
+        0,
+        2 * Math.PI
+      );
+      context.fillStyle = CANVAS_CONFIG.predictedPositionColor;
+      context.fill();
+    }
+  }
+
   function animateFrame(): void {
     const context = canvasRef.current?.getContext('2d');
     if (context != null) {
       clearBackground(context);
-      drawCursorPosition(context);
       drawPredictedPosition(context);
+      drawPredictedFuturePosition(context);
+      drawCursorPosition(context);
     }
     animationFrameRequestRef.current = requestAnimationFrame(animateFrame);
   }

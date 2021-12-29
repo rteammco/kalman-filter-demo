@@ -58,9 +58,30 @@ function runCorrectionStep(
   };
 }
 
+function predictFutureState(
+  controlMatrices: SimulationStateControlMatrices,
+  controlInputVector: SimulationVector,
+  predictedState: SimulationVector
+): SimulationVector {
+  const A = new Matrix(controlMatrices.A); // state transition matrix
+  const B = new Matrix(controlMatrices.B); // input control matrix
+  const u = Matrix.columnVector(controlInputVector); // control vector
+
+  let x = Matrix.columnVector(predictedState);
+  // TODO: i < Math.round(FPS * predictionSeconds)
+  for (let i = 0; i < 12; i++) {
+    // TODO: fix this (doesn't work)
+    x = A.mmul(x).add(B.mmul(u)); // x' = Ax + Bu
+    console.log('next: ', x.to1DArray());
+  }
+  console.log('DONE');
+  return x.to1DArray() as SimulationVector;
+}
+
 export function runKalmanFilter(simulationState: SimulationState): {
   predictedState: SimulationVector;
   predictedCovariance: SimulationMatrix;
+  predictedFutureState: SimulationVector | null;
 } {
   const {
     predictedCovariance: priorCovariance,
@@ -68,12 +89,13 @@ export function runKalmanFilter(simulationState: SimulationState): {
     sensorReadings,
   } = simulationState;
   const { matrices: controlMatrices } = simulationState.controls;
+  const controlVector: SimulationVector = [0, 0, 0, 0]; //  not used as we only obsere a sensor
 
   const { predictedState, predictedCovariance } = runPredictionStep(
     controlMatrices,
     priorState,
     priorCovariance,
-    [0, 0, 0, 0] // control vector, not used in this simulation since we're only observing a sensor
+    controlVector
   );
 
   const { correctedState, correctedCovariance } = runCorrectionStep(
@@ -83,11 +105,16 @@ export function runKalmanFilter(simulationState: SimulationState): {
     predictedCovariance
   );
 
+  let predictedFutureState = null;
   if (simulationState.controls.showPrediction) {
-    // TODO: iterate over prediction step
+    predictedFutureState = predictFutureState(controlMatrices, controlVector, correctedState);
   }
 
-  return { predictedState: correctedState, predictedCovariance: correctedCovariance };
+  return {
+    predictedState: correctedState,
+    predictedCovariance: correctedCovariance,
+    predictedFutureState,
+  };
 }
 
 // Applies simulated noise and returns the measurement vector

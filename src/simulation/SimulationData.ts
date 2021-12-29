@@ -40,6 +40,7 @@ export interface SimulationStateControls {
 export interface SimulationState {
   controls: SimulationStateControls;
   predictedCovariance: SimulationMatrix; // P matrix
+  predictedFutureState: SimulationVector | null;
   predictedState: SimulationVector; // x vector
   realCursorPosition: Point; // used by the visualization
   sensorReadings: {
@@ -94,6 +95,7 @@ const initialSimulationState: SimulationState = {
     [0, 0, 0, 0],
     [0, 0, 0, 0],
   ],
+  predictedFutureState: null,
   predictedState: [0, 0, 0, 0],
   realCursorPosition: { x: 0, y: 0 },
   sensorReadings: {
