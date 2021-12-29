@@ -57,20 +57,6 @@ function runCorrectionStep(
   };
 }
 
-// Applies simulated noise and returns the measurement vector
-function getSimulatedMeasurementVector(
-  realCursorPosition: Point,
-  previousMeasurementVector: SimulationVector
-): SimulationVector {
-  // TODO: apply noise
-  return [
-    realCursorPosition.x,
-    realCursorPosition.y,
-    realCursorPosition.x - previousMeasurementVector[0],
-    realCursorPosition.y - previousMeasurementVector[1],
-  ];
-}
-
 export function runKalmanFilter(simulationState: SimulationState): {
   predictedState: SimulationVector;
   predictedCovariance: SimulationMatrix;
@@ -103,23 +89,16 @@ export function runKalmanFilter(simulationState: SimulationState): {
   return { predictedState: correctedState, predictedCovariance: correctedCovariance };
 }
 
-export function getNextSimulationState(
-  simulationState: SimulationState,
-  realCursorPosition: Point
-): SimulationState {
-  const { sensorReadings } = simulationState;
-  const newMeasurementVector = getSimulatedMeasurementVector(
-    realCursorPosition,
-    sensorReadings.previousMeasurementVector
-  );
-  const updatedSimulationState = {
-    ...simulationState,
-    realCursorPosition,
-    sensorReadings: {
-      measurementVector: newMeasurementVector,
-      previousMeasurementVector: sensorReadings.measurementVector,
-    },
-  };
-  const { predictedState, predictedCovariance } = runKalmanFilter(updatedSimulationState);
-  return { ...updatedSimulationState, predictedState, predictedCovariance };
+// Applies simulated noise and returns the measurement vector
+export function getSimulatedMeasurementVector(
+  realCursorPosition: Point,
+  previousMeasurementVector: SimulationVector
+): SimulationVector {
+  // TODO: apply noise
+  return [
+    realCursorPosition.x,
+    realCursorPosition.y,
+    realCursorPosition.x - previousMeasurementVector[0],
+    realCursorPosition.y - previousMeasurementVector[1],
+  ];
 }
