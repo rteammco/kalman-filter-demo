@@ -15,7 +15,8 @@ import { getSimulatedMeasurementVector, runKalmanFilter } from './simulation/Sim
 // This is not necessarily the same as frame rate, as rendering may run at a different frequency.
 const KALMAN_FILTER_UPDATE_FPS = 60;
 
-// TODO: comment
+// This is the sampling rate for user input, which is also disconnected from the framrate and does
+// not rely on using event callbacks (which slows down the animation significantly).
 const USER_INPUT_SAMPLING_RATE_FPS = 60;
 
 const CANVAS_HEIGHT = 480;
