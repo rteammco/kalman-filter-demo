@@ -72,6 +72,7 @@ export default function SimulationControls(props: Props) {
   function onResetControlValues(): void {
     onSimulationControlsChanged({
       ...initialSimulationState.controls,
+      isSimulationRunning: simulationStateControls.isSimulationRunning,
       matrixInputsRefCounter: simulationStateControls.matrixInputsRefCounter + 1,
     });
   }
