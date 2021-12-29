@@ -1,3 +1,4 @@
+import { inverse, Matrix } from 'ml-matrix';
 import {
   SimulationMatrix,
   SimulationVector,
@@ -7,25 +8,26 @@ import {
   Point,
 } from './SimulationData';
 
-const matrix = require('matrix-js');
-
 function runPredictionStep(
   controlMatrices: SimulationStateControlMatrices,
   priorState: SimulationVector,
   priorCovariance: SimulationMatrix,
   controlInputVector: SimulationVector
 ): { predictedState: SimulationVector; predictedCovariance: SimulationMatrix } {
-  const x = matrix(priorState); // prior state [xPos, yPos, xVel, yVel]
-  const P = matrix(priorCovariance); // prior covariance matrix
-  const u = matrix(controlInputVector); // control vector
-  const A = matrix(controlMatrices.A); // state transition matrix
-  const B = matrix(controlMatrices.B); // input control matrix
-  const Q = matrix(controlMatrices.Q); // action uncertainty matrix (expected variance)
+  const x = Matrix.columnVector(priorState); // prior state [xPos, yPos, xVel, yVel]
+  const P = new Matrix(priorCovariance); // prior covariance matrix
+  const u = Matrix.columnVector(controlInputVector); // control vector
+  const A = new Matrix(controlMatrices.A); // state transition matrix
+  const B = new Matrix(controlMatrices.B); // input control matrix
+  const Q = new Matrix(controlMatrices.Q); // action uncertainty matrix (expected variance)
 
-  const predictedState = A.mul(x).add(B).mul(matrix(u)); // x' = Ax + Bu
-  const predictedCovariance = A.mul(P).mul(A.trans()).add(Q); // P' = APA^ + Q
+  const predictedState = A.mmul(x).add(B.mmul(u)); // x' = Ax + Bu
+  const predictedCovariance = A.mmul(P).mmul(A.transpose()).add(Q); // P' = APA^ + Q
 
-  return { predictedState, predictedCovariance };
+  return {
+    predictedState: predictedState.to1DArray() as SimulationVector,
+    predictedCovariance: predictedCovariance.to2DArray() as SimulationMatrix,
+  };
 }
 
 function runCorrectionStep(
@@ -34,22 +36,25 @@ function runCorrectionStep(
   predictedState: SimulationVector,
   predictedCovariance: SimulationMatrix
 ): { correctedState: SimulationVector; correctedCovariance: SimulationMatrix } {
-  const m = matrix(measurementVector);
-  const x = matrix(predictedState);
-  const P = matrix(predictedCovariance);
-  const H = matrix(controlMatrices.H); // measurement matrix
-  const R = matrix(controlMatrices.R); // sensor noise matrix
-  const I = matrix(identityMatrix); // identity matrix
+  const m = Matrix.columnVector(measurementVector);
+  const x = Matrix.columnVector(predictedState);
+  const P = new Matrix(predictedCovariance);
+  const H = new Matrix(controlMatrices.H); // measurement matrix
+  const R = new Matrix(controlMatrices.R); // sensor noise matrix
+  const I = new Matrix(identityMatrix); // identity matrix
 
   // Compute the Kalman gain matrix K:
-  const S = matrix(H.mul(P).mul(H.trans()).add(R)); // S = HPH^ + R
-  const K = matrix(P.mul(H.trans()).mul(S.inv())); // K = PH^(HPH^ + R)`
+  const S = H.mmul(P).mmul(H.transpose()).add(R); // S = HPH^ + R
+  const K = P.mmul(H.transpose()).mmul(inverse(S)); // K = PH^(HPH^ + R)`
 
   // Use K to compute the corrected state and covariance matrix:
-  const correctedState = x.add(K.mul(m.sub(H.mul(x)))); // x' = x + K(m - Hx)
-  const correctedCovariance = I.sub(K.mul(H)).mul(P); // P' = (I - KH)P
+  const correctedState = x.add(K.mmul(m.sub(H.mmul(x)))); // x' = x + K(m - Hx)
+  const correctedCovariance = I.sub(K.mmul(H)).mmul(P); // P' = (I - KH)P
 
-  return { correctedState, correctedCovariance };
+  return {
+    correctedState: correctedState.to1DArray() as SimulationVector,
+    correctedCovariance: correctedCovariance.to2DArray() as SimulationMatrix,
+  };
 }
 
 // Applies simulated noise and returns the measurement vector
@@ -66,7 +71,6 @@ export function getSimulatedMeasurementVector(
   ];
 }
 
-// TODO: implement tests first
 export function runSimulationStep(simulationState: SimulationState): {
   predictedState: SimulationVector;
   predictedCovariance: SimulationMatrix;
