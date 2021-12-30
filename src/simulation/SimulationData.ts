@@ -32,7 +32,7 @@ export interface SimulationStateControls {
   isSimulationRunning: boolean;
   matrices: SimulationStateControlMatrices;
   matrixInputsRefCounter: number; // increases to force re-rendering
-  noisePercentage: number;
+  noiseAmount: number;
   predictionSeconds: number;
   showPrediction: boolean;
 }
@@ -74,8 +74,8 @@ const initialSimulationState: SimulationState = {
       Q: [
         [0.001, 0, 0, 0],
         [0, 0.001, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
+        [0, 0, 0.001, 0],
+        [0, 0, 0, 0.001],
       ],
       R: [
         [0.1, 0, 0, 0],
@@ -85,7 +85,7 @@ const initialSimulationState: SimulationState = {
       ],
     },
     matrixInputsRefCounter: 0,
-    noisePercentage: 5,
+    noiseAmount: 5,
     predictionSeconds: 2,
     showPrediction: true,
   },

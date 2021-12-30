@@ -35,7 +35,10 @@ expect.extend({
 
 test('runKalmanFilter predicts no changes without movement or noise', () => {
   const simulationState = initialSimulationState;
-  const { predictedState, predictedCovariance } = runKalmanFilter(simulationState);
+  const { predictedState, predictedCovariance } = runKalmanFilter(
+    simulationState,
+    60 // simulation framerate
+  );
   expect(predictedState).toEqual([0, 0, 0, 0]);
   expect(predictedCovariance).matrixToBeCloseTo([
     [0, 0, 0, 0],

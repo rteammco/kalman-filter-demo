@@ -41,8 +41,10 @@ function App() {
 
   function runSimulationStep(): void {
     const currentSimulationState = simulationStateRef.current;
-    const { predictedState, predictedCovariance, predictedFutureState } =
-      runKalmanFilter(currentSimulationState);
+    const { predictedState, predictedCovariance, predictedFutureState } = runKalmanFilter(
+      currentSimulationState,
+      KALMAN_FILTER_UPDATE_FPS
+    );
     setSimulationState({
       ...currentSimulationState,
       predictedState,
@@ -60,8 +62,6 @@ function App() {
     const { sensorReadings } = currentSimulationState;
     const newMeasurementVector = getSimulatedMeasurementVector(
       currentSimulationState,
-      CANVAS_WIDTH,
-      CANVAS_HEIGHT,
       newPosition,
       sensorReadings.previousMeasurementVector
     );

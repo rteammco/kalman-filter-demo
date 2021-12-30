@@ -40,14 +40,14 @@ export default function SimulationControls(props: Props) {
     onSimulationControlsChanged({ showPrediction: !simulationStateControls.showPrediction });
   }
 
-  function onNoisePercentageChanged(_event: Event, newValue: number | number[]): void {
+  function onNoiseAmountChanged(_event: Event, newValue: number | number[]): void {
     let newValueAsNumber: number;
     if (typeof newValue === 'number') {
       newValueAsNumber = newValue;
     } else {
       newValueAsNumber = newValue[0];
     }
-    onSimulationControlsChanged({ noisePercentage: newValueAsNumber });
+    onSimulationControlsChanged({ noiseAmount: newValueAsNumber });
   }
 
   function onPredictionSecondsChanged(_event: Event, newValue: number | number[]): void {
@@ -123,9 +123,9 @@ export default function SimulationControls(props: Props) {
               <Slider
                 max={100}
                 min={0}
-                value={simulationStateControls.noisePercentage}
+                value={simulationStateControls.noiseAmount}
                 valueLabelDisplay="auto"
-                onChange={onNoisePercentageChanged}
+                onChange={onNoiseAmountChanged}
               />
             </Stack>
           </Box>

@@ -44,7 +44,7 @@ function runCorrectionStep(
   const R = new Matrix(controlMatrices.R); // sensor noise matrix
   const I = new Matrix(identityMatrix); // identity matrix
 
-  // Compute the Kalman gain matrix K:
+  // // Compute the Kalman gain matrix K:
   const S = H.mmul(P).mmul(H.transpose()).add(R); // S = HPH^ + R
   const K = P.mmul(H.transpose()).mmul(inverse(S)); // K = PH^(HPH^ + R)`
 
@@ -61,24 +61,28 @@ function runCorrectionStep(
 function predictFutureState(
   controlMatrices: SimulationStateControlMatrices,
   controlInputVector: SimulationVector,
-  predictedState: SimulationVector
+  predictedState: SimulationVector,
+  predictionTimeSeconds: number,
+  simulationFramerateFPS: number
 ): SimulationVector {
   const A = new Matrix(controlMatrices.A); // state transition matrix
   const B = new Matrix(controlMatrices.B); // input control matrix
   const u = Matrix.columnVector(controlInputVector); // control vector
 
   let x = Matrix.columnVector(predictedState);
-  // TODO: i < Math.round(FPS * predictionSeconds)
-  for (let i = 0; i < 12; i++) {
-    // TODO: fix this (doesn't work)
+  // TODO: there is still something funny going on here and we shouldn't have to divide the
+  // number of iterations by 4 to get a more accurate reading
+  const numIterations = (predictionTimeSeconds * simulationFramerateFPS) / 4;
+  for (let i = 0; i < numIterations; i++) {
     x = A.mmul(x).add(B.mmul(u)); // x' = Ax + Bu
-    console.log('next: ', x.to1DArray());
   }
-  console.log('DONE');
   return x.to1DArray() as SimulationVector;
 }
 
-export function runKalmanFilter(simulationState: SimulationState): {
+export function runKalmanFilter(
+  simulationState: SimulationState,
+  simulationFramerateFPS: number
+): {
   predictedState: SimulationVector;
   predictedCovariance: SimulationMatrix;
   predictedFutureState: SimulationVector | null;
@@ -88,7 +92,8 @@ export function runKalmanFilter(simulationState: SimulationState): {
     predictedState: priorState,
     sensorReadings,
   } = simulationState;
-  const { matrices: controlMatrices } = simulationState.controls;
+  const { controls } = simulationState;
+  const { matrices: controlMatrices } = controls;
   const controlVector: SimulationVector = [0, 0, 0, 0]; //  not used as we only obsere a sensor
 
   const { predictedState, predictedCovariance } = runPredictionStep(
@@ -106,8 +111,14 @@ export function runKalmanFilter(simulationState: SimulationState): {
   );
 
   let predictedFutureState = null;
-  if (simulationState.controls.showPrediction) {
-    predictedFutureState = predictFutureState(controlMatrices, controlVector, correctedState);
+  if (controls.showPrediction) {
+    predictedFutureState = predictFutureState(
+      controlMatrices,
+      controlVector,
+      correctedState,
+      controls.predictionSeconds,
+      simulationFramerateFPS
+    );
   }
 
   return {
@@ -120,21 +131,12 @@ export function runKalmanFilter(simulationState: SimulationState): {
 // Applies simulated noise and returns the measurement vector
 export function getSimulatedMeasurementVector(
   simulationState: SimulationState,
-  canvasWidth: number,
-  canvasHeight: number,
   realCursorPosition: Point,
   previousMeasurementVector: SimulationVector
 ): SimulationVector {
-  const measuredX = applyRandomNoise(
-    realCursorPosition.x,
-    simulationState.controls.noisePercentage,
-    canvasWidth
-  );
-  const measuredY = applyRandomNoise(
-    realCursorPosition.y,
-    simulationState.controls.noisePercentage,
-    canvasHeight
-  );
+  const { noiseAmount } = simulationState.controls;
+  const measuredX = applyRandomNoise(realCursorPosition.x, noiseAmount);
+  const measuredY = applyRandomNoise(realCursorPosition.y, noiseAmount);
   return [
     measuredX,
     measuredY,
