@@ -1,6 +1,6 @@
 import { Button, Checkbox, FormControlLabel, Slider, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   SimulationControlMatrixKey,
   SimulationMatrix,
@@ -13,12 +13,7 @@ import MatrixInputGrid from './MatrixInputGrid';
 
 type SimulationStatus = 'NOT_STARTED' | 'RUNNING' | 'PAUSED';
 
-function ControlMatrices({
-  matrixInputsRefCounter,
-  panelWidth,
-  matrices,
-  onMatrixValuesChanged,
-}: {
+interface ControlMatricesProps {
   matrixInputsRefCounter: number;
   panelWidth: number;
   matrices: SimulationStateControlMatrices;
@@ -26,7 +21,14 @@ function ControlMatrices({
     matrixKey: SimulationControlMatrixKey,
     newMatrixValues: SimulationMatrix
   ) => void;
-}) {
+}
+
+function ControlMatrices({
+  matrixInputsRefCounter,
+  panelWidth,
+  matrices,
+  onMatrixValuesChanged,
+}: ControlMatricesProps) {
   return (
     <Box key={`matrix_inputs_ref_counter=${matrixInputsRefCounter}`}>
       <Box
@@ -79,6 +81,12 @@ function ControlMatrices({
     </Box>
   );
 }
+const MemoizedControlMatrices = React.memo(
+  ControlMatrices,
+  (prevProps, nextProps) =>
+    prevProps.matrixInputsRefCounter === nextProps.matrixInputsRefCounter &&
+    prevProps.matrices === nextProps.matrices
+);
 
 interface Props {
   panelWidth: number;
@@ -153,11 +161,6 @@ export default function SimulationControls(props: Props) {
   }
 
   const { panelWidth } = props;
-  const controlMatrices = useMemo(
-    () => ControlMatrices({ matrixInputsRefCounter, panelWidth, matrices, onMatrixValuesChanged }),
-    [matrixInputsRefCounter, matrices]
-  );
-
   return (
     <Box>
       <Box display="flex" justifyContent="center" width={panelWidth}>
@@ -216,7 +219,12 @@ export default function SimulationControls(props: Props) {
           </Box>
         </Box>
       </Box>
-      {controlMatrices}
+      <MemoizedControlMatrices
+        matrixInputsRefCounter={matrixInputsRefCounter}
+        panelWidth={panelWidth}
+        matrices={matrices}
+        onMatrixValuesChanged={onMatrixValuesChanged}
+      />
     </Box>
   );
 }
