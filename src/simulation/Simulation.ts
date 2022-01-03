@@ -131,9 +131,9 @@ export function runKalmanFilter(
 // Applies simulated noise and returns the measurement vector
 export function getSimulatedMeasurementVector(
   simulationState: SimulationState,
-  realCursorPosition: Point,
   previousMeasurementVector: SimulationVector
 ): SimulationVector {
+  const { realCursorPosition } = simulationState;
   const { noiseAmount } = simulationState.controls;
   const measuredX = applyRandomNoise(realCursorPosition.x, noiseAmount);
   const measuredY = applyRandomNoise(realCursorPosition.y, noiseAmount);

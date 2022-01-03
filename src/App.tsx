@@ -41,12 +41,24 @@ function App() {
 
   function runSimulationStep(): void {
     const currentSimulationState = simulationStateRef.current;
-    const { predictedState, predictedCovariance, predictedFutureState } = runKalmanFilter(
+    const { sensorReadings } = currentSimulationState;
+    const measurementVector = getSimulatedMeasurementVector(
       currentSimulationState,
+      sensorReadings.previousMeasurementVector
+    );
+    const simulationStateWithNewMeasurement = {
+      ...currentSimulationState,
+      sensorReadings: {
+        measurementVector,
+        previousMeasurementVector: sensorReadings.measurementVector,
+      },
+    };
+    const { predictedState, predictedCovariance, predictedFutureState } = runKalmanFilter(
+      simulationStateWithNewMeasurement,
       KALMAN_FILTER_UPDATE_FPS
     );
     setSimulationState({
-      ...currentSimulationState,
+      ...simulationStateWithNewMeasurement,
       predictedState,
       predictedCovariance,
       predictedFutureState,
@@ -54,24 +66,13 @@ function App() {
   }
 
   function onSimulationControlsChanged(updatedControls: Partial<SimulationStateControls>): void {
-    setSimulationState(updateSimulationStateControls(simulationState, updatedControls));
+    setSimulationState(updateSimulationStateControls(simulationStateRef.current, updatedControls));
   }
 
   function onCursorPositionChanged(newPosition: Point): void {
-    const currentSimulationState = simulationStateRef.current;
-    const { sensorReadings } = currentSimulationState;
-    const newMeasurementVector = getSimulatedMeasurementVector(
-      currentSimulationState,
-      newPosition,
-      sensorReadings.previousMeasurementVector
-    );
     setSimulationState({
-      ...currentSimulationState,
+      ...simulationStateRef.current,
       realCursorPosition: newPosition,
-      sensorReadings: {
-        measurementVector: newMeasurementVector,
-        previousMeasurementVector: sensorReadings.measurementVector,
-      },
     });
   }
 
@@ -86,7 +87,7 @@ function App() {
       />
       <SimulationControls
         panelWidth={CANVAS_WIDTH}
-        simulationState={simulationState}
+        simulationStateControls={simulationState.controls}
         onSimulationControlsChanged={onSimulationControlsChanged}
       />
     </div>

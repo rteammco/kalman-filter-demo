@@ -1,30 +1,96 @@
 import { Button, Checkbox, FormControlLabel, Slider, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   SimulationControlMatrixKey,
   SimulationMatrix,
-  SimulationState,
   SimulationStateControls,
   initialSimulationState,
   updateSimulationStateMatrix,
+  SimulationStateControlMatrices,
 } from '../simulation/SimulationData';
 import MatrixInputGrid from './MatrixInputGrid';
 
 type SimulationStatus = 'NOT_STARTED' | 'RUNNING' | 'PAUSED';
 
+function ControlMatrices({
+  matrixInputsRefCounter,
+  panelWidth,
+  matrices,
+  onMatrixValuesChanged,
+}: {
+  matrixInputsRefCounter: number;
+  panelWidth: number;
+  matrices: SimulationStateControlMatrices;
+  onMatrixValuesChanged: (
+    matrixKey: SimulationControlMatrixKey,
+    newMatrixValues: SimulationMatrix
+  ) => void;
+}) {
+  return (
+    <Box key={`matrix_inputs_ref_counter=${matrixInputsRefCounter}`}>
+      <Box
+        display="flex"
+        flexDirection="row"
+        justifyContent="center"
+        paddingTop={4}
+        width={panelWidth}
+      >
+        <MatrixInputGrid
+          matrixDescription="State Transition"
+          matrixName="A Matrix"
+          matrixValues={matrices.A}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('A', newMatrixValues)}
+        />
+        <MatrixInputGrid
+          isDisabled
+          matrixDescription="Input Control"
+          matrixName="B Matrix"
+          matrixValues={matrices.B}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('B', newMatrixValues)}
+        />
+        <MatrixInputGrid
+          matrixDescription="Measurement"
+          matrixName="H Matrix"
+          matrixValues={matrices.H}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('H', newMatrixValues)}
+        />
+      </Box>
+      <Box
+        display="flex"
+        flexDirection="row"
+        justifyContent="center"
+        paddingTop={3}
+        width={panelWidth}
+      >
+        <MatrixInputGrid
+          matrixDescription="Action Uncertainty"
+          matrixName="Q Matrix"
+          matrixValues={matrices.Q}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('Q', newMatrixValues)}
+        />
+        <MatrixInputGrid
+          matrixDescription="Sensor Noise"
+          matrixName="R Matrix"
+          matrixValues={matrices.R}
+          onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('R', newMatrixValues)}
+        />
+      </Box>
+    </Box>
+  );
+}
+
 interface Props {
   panelWidth: number;
-  simulationState: SimulationState;
+  simulationStateControls: SimulationStateControls;
   onSimulationControlsChanged: (updatedControls: Partial<SimulationStateControls>) => void;
 }
 
 export default function SimulationControls(props: Props) {
   const [simulationStatusText, setSimulationStatusText] = useState<SimulationStatus>('NOT_STARTED');
 
-  const { onSimulationControlsChanged } = props;
-  const simulationStateControls = props.simulationState.controls;
-  const { matrices } = simulationStateControls;
+  const { simulationStateControls, onSimulationControlsChanged } = props;
+  const { matrices, matrixInputsRefCounter } = simulationStateControls;
 
   function toggleSimulation(): void {
     if (simulationStatusText === 'RUNNING') {
@@ -73,7 +139,7 @@ export default function SimulationControls(props: Props) {
     onSimulationControlsChanged({
       ...initialSimulationState.controls,
       isSimulationRunning: simulationStateControls.isSimulationRunning,
-      matrixInputsRefCounter: simulationStateControls.matrixInputsRefCounter + 1,
+      matrixInputsRefCounter: matrixInputsRefCounter + 1,
     });
   }
 
@@ -87,6 +153,11 @@ export default function SimulationControls(props: Props) {
   }
 
   const { panelWidth } = props;
+  const controlMatrices = useMemo(
+    () => ControlMatrices({ matrixInputsRefCounter, panelWidth, matrices, onMatrixValuesChanged }),
+    [matrixInputsRefCounter, matrices]
+  );
+
   return (
     <Box>
       <Box display="flex" justifyContent="center" width={panelWidth}>
@@ -145,55 +216,7 @@ export default function SimulationControls(props: Props) {
           </Box>
         </Box>
       </Box>
-      <Box key={`matrix_inputs_ref_counter=${simulationStateControls.matrixInputsRefCounter}`}>
-        <Box
-          display="flex"
-          flexDirection="row"
-          justifyContent="center"
-          paddingTop={4}
-          width={panelWidth}
-        >
-          <MatrixInputGrid
-            matrixDescription="State Transition"
-            matrixName="A Matrix"
-            matrixValues={matrices.A}
-            onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('A', newMatrixValues)}
-          />
-          <MatrixInputGrid
-            isDisabled
-            matrixDescription="Input Control"
-            matrixName="B Matrix"
-            matrixValues={matrices.B}
-            onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('B', newMatrixValues)}
-          />
-          <MatrixInputGrid
-            matrixDescription="Measurement"
-            matrixName="H Matrix"
-            matrixValues={matrices.H}
-            onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('H', newMatrixValues)}
-          />
-        </Box>
-        <Box
-          display="flex"
-          flexDirection="row"
-          justifyContent="center"
-          paddingTop={3}
-          width={panelWidth}
-        >
-          <MatrixInputGrid
-            matrixDescription="Action Uncertainty"
-            matrixName="Q Matrix"
-            matrixValues={matrices.Q}
-            onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('Q', newMatrixValues)}
-          />
-          <MatrixInputGrid
-            matrixDescription="Sensor Noise"
-            matrixName="R Matrix"
-            matrixValues={matrices.R}
-            onMatrixValuesChanged={(newMatrixValues) => onMatrixValuesChanged('R', newMatrixValues)}
-          />
-        </Box>
-      </Box>
+      {controlMatrices}
     </Box>
   );
 }

@@ -22,7 +22,6 @@ interface Props {
 
 export default function SimulationCanvas(props: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const canvasCursorPositionRef = useRef<Point | null>(null);
   const canvasCursorLockedRef = useRef<boolean>(false);
 
   const { simulationState } = props;
@@ -39,27 +38,6 @@ export default function SimulationCanvas(props: Props) {
       }
     };
   }, []);
-
-  // Start a mouse position sampling loop at the desired framerate, since using the canvas
-  // onMouseMove event floods the callback event queue and creates a lot of lag:
-  useEffect(() => {
-    const userInputSamplingInterval = setInterval(
-      sampleCursorPosition,
-      Math.round(1000 / props.userInputSamplingRateFPS)
-    );
-    return () => {
-      clearInterval(userInputSamplingInterval);
-    };
-  }, []);
-
-  function sampleCursorPosition(): void {
-    if (
-      simulationStateRef.current.controls.isSimulationRunning &&
-      canvasCursorPositionRef.current != null
-    ) {
-      props.onCursorPositionChanged(canvasCursorPositionRef.current);
-    }
-  }
 
   function clearBackground(context: CanvasRenderingContext2D): void {
     const { width, height } = context.canvas;
@@ -135,7 +113,7 @@ export default function SimulationCanvas(props: Props) {
     const canvasBoundingRect = canvas.getBoundingClientRect();
     const x = event.clientX - canvasBoundingRect.left;
     const y = event.clientY - canvasBoundingRect.top;
-    canvasCursorPositionRef.current = { x, y };
+    props.onCursorPositionChanged({ x, y });
   }
 
   return (
