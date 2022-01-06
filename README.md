@@ -1,46 +1,32 @@
-# Getting Started with Create React App
+# Kalman Filter Demo
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is an HTML5 Canvas + React implementation of a Kalman Filter simulation. A Kalman filter can be used to predict the current and future state of a system where the sensor may be experiencing a lot of input noise.
 
-## Available Scripts
+This demo simulates a ball being observed by a camera (or some other sensor). The ground truth position of the ball is determined by the user's cursor position, and random noise is added. The Kalman Filter is then run on the noisy position reading to give an estimated position. If prediction is enabled, the Kalman Filter can also predict the where the ball will be after _n_ seconds given the current sensor reading.
 
-In the project directory, you can run:
+## Running the Code
 
-### `npm start`
+This project is built with React + TypeScript.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+1. `git clone git@github.com:rteammco/kalman-filter-demo.git`
+2. `cd kalman-filter-demo`
+3. `npm i`
+4. `npm run start`
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+This runs the app in the development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-### `npm test`
+## How This Demo Works
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#### Basic Controls
 
-### `npm run build`
+- Move your mouse cursor around the black canvas screen. The soccer ball will follow your cursor position. This is the **ground truth** position of the ball.
+- You can click anywhere in the canvas area to lock the ball's position. Click again to make the ball follow your cursor again.
+- Click _START SIMULATION_ to start the Kalman Filter. Once it is running, you can click _PAUSE_ or _RESUME_ to toggle the Kalman Filter simulation on or off. You can still move the ball around even when the simulation is off.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+#### The Kalman Filter
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- The green circle represents the Kalman Filter's estimate of the ball's position.
+- If the _Show Prediction_ checkbox is enabled, the faded soccer ball represents the Kalman Filter's predicted **future** position of the ball in _n_ seconds, where _n_ is adjusted with the _Prediction_ slider.
+- You can control the amount of simulated sensor noise by moving the _Noise_ slider.
+- The matrix values for matrices _A_, _H_, _Q_, and _R_ can be individually adjusted. Simply edit any of the values in any cell and it will update in the simulation in real time.
+- Matrix _B_ is the control matrix, which is disabled for this simulation. The control matrix does not apply here since we're only simulating a sensor and have no control over the ball itself.
