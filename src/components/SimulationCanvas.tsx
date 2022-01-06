@@ -12,6 +12,7 @@ const CANVAS_CONFIG = {
   predictionRadius: 20,
   predictionStrokeSize: 4,
   soccerBallImageSize: 30,
+  soccerBallPredictionImageAlpha: 0.5,
 } as const;
 
 interface Props {
@@ -108,16 +109,36 @@ export default function SimulationCanvas(props: Props) {
   function drawPredictedFuturePosition(context: CanvasRenderingContext2D): void {
     const predictedFuturePosition = simulationStateRef.current.predictedFutureState;
     if (predictedFuturePosition != null) {
-      context.beginPath();
-      context.arc(
-        predictedFuturePosition[0],
-        predictedFuturePosition[1],
-        CANVAS_CONFIG.predictedPositionRadius,
-        0,
-        2 * Math.PI
-      );
-      context.fillStyle = CANVAS_CONFIG.predictedPositionColor;
-      context.fill();
+      const predictedFuturePositionPoint: Point = {
+        x: predictedFuturePosition[0],
+        y: predictedFuturePosition[1],
+      };
+      const soccerBallImage = soccerBallImageRef.current;
+      if (soccerBallImage == null) {
+        context.beginPath();
+        context.arc(
+          predictedFuturePositionPoint.x,
+          predictedFuturePositionPoint.y,
+          CANVAS_CONFIG.predictedPositionRadius,
+          0,
+          2 * Math.PI
+        );
+        context.fillStyle = CANVAS_CONFIG.predictedPositionColor;
+        context.fill();
+      } else {
+        const { soccerBallImageSize, soccerBallPredictionImageAlpha } = CANVAS_CONFIG;
+        const halfSoccerBallImageSize = soccerBallImageSize / 2;
+        context.save();
+        context.globalAlpha = soccerBallPredictionImageAlpha;
+        context.drawImage(
+          soccerBallImage,
+          predictedFuturePositionPoint.x - halfSoccerBallImageSize,
+          predictedFuturePositionPoint.y - halfSoccerBallImageSize,
+          soccerBallImageSize,
+          soccerBallImageSize
+        );
+        context.restore();
+      }
     }
   }
 
