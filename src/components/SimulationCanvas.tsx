@@ -1,15 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { Point, SimulationState } from '../simulation/SimulationData';
+import { getRotationOfCircleTraveledBetweenTwoPoints } from '../utils/Utils';
 
 const CANVAS_CONFIG = {
   backgroundColor: 'black',
-  cursorColor: 'red',
-  cursorRadius: 5,
+  defaultCursorColor: 'red',
+  defaultCursorRadius: 10,
   predictedPositionColor: 'yellow',
-  predictedPositionRadius: 5,
+  predictedPositionRadius: 10,
   predictionColor: 'green',
-  predictionRadius: 10,
+  predictionRadius: 20,
   predictionStrokeSize: 4,
+  soccerBallImageSize: 30,
 } as const;
 
 interface Props {
@@ -28,9 +30,18 @@ export default function SimulationCanvas(props: Props) {
   const simulationStateRef = useRef<SimulationState>(simulationState);
   simulationStateRef.current = simulationState;
 
+  const soccerBallImageRef = useRef<HTMLImageElement | null>(null);
+  const lastCursorPositionRef = useRef<Point>(simulationState.realCursorPosition);
+  const lastCursorRotationRef = useRef<number>(0);
+
   // Start the animation loop:
   const animationFrameRequestRef = useRef<number | null>(null);
   useEffect(() => {
+    const soccerBallImage = new Image();
+    soccerBallImage.src = 'soccer_ball.png';
+    soccerBallImage.onload = () => {
+      soccerBallImageRef.current = soccerBallImage;
+    };
     animationFrameRequestRef.current = requestAnimationFrame(animateFrame);
     return () => {
       if (animationFrameRequestRef.current != null) {
@@ -50,10 +61,33 @@ export default function SimulationCanvas(props: Props) {
 
   function drawCursorPosition(context: CanvasRenderingContext2D): void {
     const position = simulationStateRef.current.realCursorPosition;
-    context.beginPath();
-    context.arc(position.x, position.y, CANVAS_CONFIG.cursorRadius, 0, 2 * Math.PI);
-    context.fillStyle = CANVAS_CONFIG.cursorColor;
-    context.fill();
+    const soccerBallImage = soccerBallImageRef.current;
+    if (soccerBallImage == null) {
+      context.beginPath();
+      context.arc(position.x, position.y, CANVAS_CONFIG.defaultCursorRadius, 0, 2 * Math.PI);
+      context.fillStyle = CANVAS_CONFIG.defaultCursorColor;
+      context.fill();
+    } else {
+      const { soccerBallImageSize } = CANVAS_CONFIG;
+      const halfSoccerBallImageSize = soccerBallImageSize / 2;
+      lastCursorRotationRef.current += getRotationOfCircleTraveledBetweenTwoPoints(
+        lastCursorPositionRef.current,
+        position,
+        soccerBallImageSize // image size ~= diameter
+      );
+      context.save();
+      context.translate(position.x, position.y);
+      context.rotate(lastCursorRotationRef.current);
+      context.drawImage(
+        soccerBallImage,
+        -halfSoccerBallImageSize,
+        -halfSoccerBallImageSize,
+        soccerBallImageSize,
+        soccerBallImageSize
+      );
+      context.restore();
+    }
+    lastCursorPositionRef.current = position;
   }
 
   function drawPredictedPosition(context: CanvasRenderingContext2D): void {
