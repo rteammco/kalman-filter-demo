@@ -4,6 +4,8 @@ This is an HTML5 Canvas + React implementation of a Kalman Filter simulation. A 
 
 This demo simulates a ball being observed by a camera (or some other sensor). The ground truth position of the ball is determined by the user's cursor position, and random noise is added. The Kalman Filter is then run on the noisy position reading to give an estimated position. If prediction is enabled, the Kalman Filter can also predict the where the ball will be after _n_ seconds given the current sensor reading.
 
+![kalman_filter_demo](https://user-images.githubusercontent.com/2659470/148314731-daad73b7-e6bd-4a94-97c4-a2cffd9a0efc.png)
+
 ## Running the Code
 
 This project is built with React + TypeScript.
