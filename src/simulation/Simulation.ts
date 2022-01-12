@@ -6,7 +6,6 @@ import {
   SimulationStateControlMatrices,
   identityMatrix,
   SimulationState,
-  Point,
 } from './SimulationData';
 
 function runPredictionStep(
